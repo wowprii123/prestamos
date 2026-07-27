@@ -1,0 +1,172 @@
+// Esquema de dominio: sistema de préstamos tipo entidad financiera.
+// Sistema francés (cuota fija, interés sobre saldo). Ver src/lib/amortizacion.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RolUsuario {
+  admin
+  cliente
+}
+
+enum Periodo {
+  diario
+  semanal
+  quincenal
+  mensual
+}
+
+enum EstadoPrestamo {
+  activo
+  pagado
+  en_mora
+  cancelado
+}
+
+enum EstadoCuota {
+  pendiente
+  parcial
+  pagada
+  vencida
+}
+
+enum TipoPago {
+  recomendado
+  libre
+}
+
+enum TipoExtracto {
+  mensual
+  acumulado
+}
+
+enum EstadoEnvio {
+  pendiente
+  enviado
+  fallido
+}
+
+model Usuario {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  hashPassword String     @map("hash_password")
+  nombre       String
+  rol          RolUsuario
+  telefono     String?
+  activo       Boolean    @default(true)
+  creadoEn     DateTime   @default(now()) @map("creado_en")
+
+  prestamosComoCliente Prestamo[] @relation("PrestamosCliente")
+  prestamosCreados     Prestamo[] @relation("PrestamosCreador")
+  pagosRegistrados     Pago[]
+
+  @@map("usuarios")
+}
+
+model Prestamo {
+  id              String         @id @default(cuid())
+  clienteId       String         @map("cliente_id")
+  cliente         Usuario        @relation("PrestamosCliente", fields: [clienteId], references: [id])
+  monto           Decimal        @db.Decimal(14, 2)
+  tasaMensual     Decimal        @map("tasa_mensual") @db.Decimal(6, 3)
+  tasaPeriodo     Decimal        @map("tasa_periodo") @db.Decimal(9, 6)
+  periodo         Periodo
+  numeroCuotas    Int            @map("numero_cuotas")
+  valorCuota      Decimal        @map("valor_cuota") @db.Decimal(14, 2)
+  fechaDesembolso DateTime       @map("fecha_desembolso")
+  estado          EstadoPrestamo @default(activo)
+  creadoPorId     String         @map("creado_por_id")
+  creadoPor       Usuario        @relation("PrestamosCreador", fields: [creadoPorId], references: [id])
+  creadoEn        DateTime       @default(now()) @map("creado_en")
+
+  cuotas    Cuota[]
+  pagos     Pago[]
+  extractos Extracto[]
+
+  @@map("prestamos")
+}
+
+model Cuota {
+  id               String      @id @default(cuid())
+  prestamoId       String      @map("prestamo_id")
+  prestamo         Prestamo    @relation(fields: [prestamoId], references: [id], onDelete: Cascade)
+  numero           Int
+  fechaVencimiento DateTime    @map("fecha_vencimiento")
+  valorCuota       Decimal     @map("valor_cuota") @db.Decimal(14, 2)
+  interes          Decimal     @db.Decimal(14, 2)
+  capital          Decimal     @db.Decimal(14, 2)
+  saldoRestante    Decimal     @map("saldo_restante") @db.Decimal(14, 2)
+  montoPagado      Decimal     @default(0) @map("monto_pagado") @db.Decimal(14, 2)
+  estado           EstadoCuota @default(pendiente)
+
+  aplicaciones AplicacionPago[]
+
+  @@unique([prestamoId, numero])
+  @@map("cuotas")
+}
+
+model Pago {
+  id              String   @id @default(cuid())
+  prestamoId      String   @map("prestamo_id")
+  prestamo        Prestamo @relation(fields: [prestamoId], references: [id])
+  fecha           DateTime @default(now())
+  monto           Decimal  @db.Decimal(14, 2)
+  tipo            TipoPago
+  medioPago       String?  @map("medio_pago")
+  nota            String?
+  registradoPorId String   @map("registrado_por_id")
+  registradoPor   Usuario  @relation(fields: [registradoPorId], references: [id])
+  creadoEn        DateTime @default(now()) @map("creado_en")
+
+  aplicaciones AplicacionPago[]
+
+  @@map("pagos")
+}
+
+model AplicacionPago {
+  id            String  @id @default(cuid())
+  pagoId        String  @map("pago_id")
+  pago          Pago    @relation(fields: [pagoId], references: [id], onDelete: Cascade)
+  cuotaId       String  @map("cuota_id")
+  cuota         Cuota   @relation(fields: [cuotaId], references: [id])
+  montoAplicado Decimal @map("monto_aplicado") @db.Decimal(14, 2)
+
+  @@map("aplicaciones_pago")
+}
+
+model Extracto {
+  id            String       @id @default(cuid())
+  prestamoId    String       @map("prestamo_id")
+  prestamo      Prestamo     @relation(fields: [prestamoId], references: [id])
+  tipo          TipoExtracto
+  periodoInicio DateTime     @map("periodo_inicio")
+  periodoFin    DateTime     @map("periodo_fin")
+  rutaPdf       String?      @map("ruta_pdf")
+  generadoEn    DateTime     @default(now()) @map("generado_en")
+  enviadoEn     DateTime?    @map("enviado_en")
+  estadoEnvio   EstadoEnvio  @default(pendiente) @map("estado_envio")
+  intentosEnvio Int          @default(0) @map("intentos_envio")
+
+  correos CorreoEnviado[]
+
+  @@map("extractos")
+}
+
+model CorreoEnviado {
+  id           String      @id @default(cuid())
+  extractoId   String      @map("extracto_id")
+  extracto     Extracto    @relation(fields: [extractoId], references: [id])
+  destinatario String
+  proveedor    String      @default("zeptomail")
+  respuestaApi Json?       @map("respuesta_api")
+  estado       EstadoEnvio
+  creadoEn     DateTime    @default(now()) @map("creado_en")
+
+  @@map("correos_enviados")
+}
