@@ -18,6 +18,7 @@ export default async function AdminLayout({
         enlaces={[
           { href: "/admin/clientes", label: "Clientes" },
           { href: "/admin/prestamos", label: "Préstamos" },
+          { href: "/admin/cobros", label: "Cobros" },
         ]}
       />
       <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">{children}</main>
