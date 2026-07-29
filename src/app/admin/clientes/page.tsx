@@ -21,32 +21,34 @@ export default async function AdminClientesPage() {
         <p className="text-sm text-slate-500">Todavía no hay clientes registrados.</p>
       ) : (
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                <th className="px-4 py-3">Nombre</th>
-                <th className="px-4 py-3">Correo</th>
-                <th className="px-4 py-3">Teléfono</th>
-                <th className="px-4 py-3 text-right">Préstamos</th>
-                <th className="px-4 py-3">Registrado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {clientes.map((cliente) => (
-                <tr key={cliente.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{cliente.nombre}</td>
-                  <td className="px-4 py-3 text-slate-700">{cliente.email}</td>
-                  <td className="px-4 py-3 text-slate-700">{cliente.telefono ?? "—"}</td>
-                  <td className="px-4 py-3 text-right text-slate-700">
-                    {cliente._count.prestamosComoCliente}
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {formatearFecha(cliente.creadoEn)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3">Nombre</th>
+                  <th className="px-4 py-3">Correo</th>
+                  <th className="px-4 py-3">Teléfono</th>
+                  <th className="px-4 py-3 text-right">Préstamos</th>
+                  <th className="px-4 py-3">Registrado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {clientes.map((cliente) => (
+                  <tr key={cliente.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-900">{cliente.nombre}</td>
+                    <td className="px-4 py-3 text-slate-700">{cliente.email}</td>
+                    <td className="px-4 py-3 text-slate-700">{cliente.telefono ?? "—"}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">
+                      {cliente._count.prestamosComoCliente}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {formatearFecha(cliente.creadoEn)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

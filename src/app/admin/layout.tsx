@@ -11,7 +11,7 @@ export default async function AdminLayout({
   if (!session || session.user.rol !== "admin") redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row">
       <Sidebar
         titulo="Préstamos · Admin"
         nombre={session.user.name ?? session.user.email ?? ""}
@@ -19,9 +19,12 @@ export default async function AdminLayout({
           { href: "/admin/clientes", label: "Clientes" },
           { href: "/admin/prestamos", label: "Préstamos" },
           { href: "/admin/cobros", label: "Cobros" },
+          { href: "/admin/estadisticas", label: "Estadísticas" },
         ]}
       />
-      <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">{children}</main>
+      <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        {children}
+      </main>
     </div>
   );
 }
