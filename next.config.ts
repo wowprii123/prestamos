@@ -3,9 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      // Debe ser al menos el límite de archivo-a-data-url.ts (8MB) para que
-      // las fotos de cámara de celular no se rechacen antes de llegar ahí.
-      bodySizeLimit: "8mb",
+      // Las fotos se comprimen a JPEG en el navegador antes de subirse
+      // (ver comprimir-imagen.ts), así que llegan como un campo de texto
+      // pequeño; este margen es solo por si el navegador comprime peor de
+      // lo esperado en alguna imagen.
+      bodySizeLimit: "2mb",
     },
   },
 };
