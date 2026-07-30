@@ -13,7 +13,7 @@ export interface CuotaCalculada {
 
 export interface ParametrosAmortizacion {
   monto: Decimal.Value;
-  /** Tasa que se cobra completa en cada cuota (no se convierte por período). */
+  /** Tasa sobre el monto total del préstamo (no por cuota, no se convierte por período). */
   tasaPorcentaje: Decimal.Value;
   /** Determina la cadencia de los vencimientos; no afecta el cálculo de interés. */
   periodo: Periodo;
@@ -27,11 +27,10 @@ export interface TablaAmortizacion {
 }
 
 /**
- * Genera la tabla de amortización por interés simple (fijo): el capital se
- * reparte en partes iguales entre las cuotas, y el interés es el mismo
- * monto en cada cuota (monto prestado × tasa), sin importar cuánto capital
- * ya se haya pagado. La última cuota absorbe el residuo de redondeo del
- * capital para que el saldo cierre exactamente en cero.
+ * Genera la tabla de amortización por interés simple (fijo): el interés
+ * total del préstamo (monto × tasa) y el capital se reparten en partes
+ * iguales entre las cuotas. La última cuota absorbe el residuo de redondeo
+ * de ambos para que capital e interés cierren exactos.
  */
 export function generarTablaAmortizacion(
   parametros: ParametrosAmortizacion,
@@ -45,29 +44,36 @@ export function generarTablaAmortizacion(
   const montoDecimal = new Decimal(monto);
   const tasaFraccion = new Decimal(tasaPorcentaje).div(100);
 
-  const interesPorCuota = redondearMoneda(montoDecimal.mul(tasaFraccion));
+  const interesTotal = redondearMoneda(montoDecimal.mul(tasaFraccion));
+  const interesPorCuotaBase = redondearMoneda(interesTotal.div(numeroCuotas));
   const capitalBase = redondearMoneda(montoDecimal.div(numeroCuotas));
 
   const cuotas: CuotaCalculada[] = [];
   let saldoRestante = montoDecimal;
+  let interesAcumulado = new Decimal(0);
 
   for (let numero = 1; numero <= numeroCuotas; numero++) {
     const esUltimaCuota = numero === numeroCuotas;
-    const capital = esUltimaCuota ? saldoRestante : capitalBase;
 
+    const capital = esUltimaCuota ? saldoRestante : capitalBase;
     saldoRestante = esUltimaCuota
       ? new Decimal(0)
       : redondearMoneda(saldoRestante.minus(capital));
 
+    const interes = esUltimaCuota
+      ? redondearMoneda(interesTotal.minus(interesAcumulado))
+      : interesPorCuotaBase;
+    interesAcumulado = interesAcumulado.plus(interes);
+
     cuotas.push({
       numero,
       fechaVencimiento: fechaVencimientoCuota(fechaDesembolso, periodo, numero),
-      valorCuota: redondearMoneda(capital.plus(interesPorCuota)),
-      interes: interesPorCuota,
+      valorCuota: redondearMoneda(capital.plus(interes)),
+      interes,
       capital,
       saldoRestante,
     });
   }
 
-  return { valorCuota: redondearMoneda(capitalBase.plus(interesPorCuota)), cuotas };
+  return { valorCuota: redondearMoneda(capitalBase.plus(interesPorCuotaBase)), cuotas };
 }

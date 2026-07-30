@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { generarTablaAmortizacion } from "./calcular";
 
 describe("generarTablaAmortizacion (interés simple)", () => {
-  it("reproduce el ejemplo exacto: 100.000 al 20%, 2 cuotas -> 70.000 c/u", () => {
+  it("reproduce el ejemplo exacto: 100.000 al 20%, 2 cuotas -> 60.000 c/u", () => {
     const { valorCuota, cuotas } = generarTablaAmortizacion({
       monto: 100_000,
       tasaPorcentaje: 20,
@@ -11,33 +11,46 @@ describe("generarTablaAmortizacion (interés simple)", () => {
       fechaDesembolso: new Date("2026-01-01"),
     });
 
-    expect(valorCuota.toNumber()).toBe(70_000);
+    expect(valorCuota.toNumber()).toBe(60_000);
     expect(cuotas).toHaveLength(2);
 
     expect(cuotas[0].capital.toNumber()).toBe(50_000);
-    expect(cuotas[0].interes.toNumber()).toBe(20_000);
-    expect(cuotas[0].valorCuota.toNumber()).toBe(70_000);
+    expect(cuotas[0].interes.toNumber()).toBe(10_000);
+    expect(cuotas[0].valorCuota.toNumber()).toBe(60_000);
     expect(cuotas[0].saldoRestante.toNumber()).toBe(50_000);
 
     expect(cuotas[1].capital.toNumber()).toBe(50_000);
-    expect(cuotas[1].interes.toNumber()).toBe(20_000);
-    expect(cuotas[1].valorCuota.toNumber()).toBe(70_000);
+    expect(cuotas[1].interes.toNumber()).toBe(10_000);
+    expect(cuotas[1].valorCuota.toNumber()).toBe(60_000);
     expect(cuotas[1].saldoRestante.toNumber()).toBe(0);
   });
 
-  it("el interés es idéntico en todas las cuotas (no baja como en sistema francés)", () => {
+  it("el interés total (monto x tasa) se reparte en partes iguales entre las cuotas", () => {
     const { cuotas } = generarTablaAmortizacion({
       monto: 1_000_000,
       tasaPorcentaje: 10,
       periodo: "mensual",
-      numeroCuotas: 6,
+      numeroCuotas: 5,
       fechaDesembolso: new Date("2026-01-01"),
     });
 
-    const interesEsperado = 100_000; // 1.000.000 * 10%
+    const interesPorCuotaEsperado = 20_000; // (1.000.000 * 10%) / 5
     for (const cuota of cuotas) {
-      expect(cuota.interes.toNumber()).toBe(interesEsperado);
+      expect(cuota.interes.toNumber()).toBe(interesPorCuotaEsperado);
     }
+  });
+
+  it("la suma de los intereses de todas las cuotas es exacta (monto x tasa), con residuo en la última", () => {
+    const { cuotas } = generarTablaAmortizacion({
+      monto: 100_000,
+      tasaPorcentaje: 20,
+      periodo: "mensual",
+      numeroCuotas: 3,
+      fechaDesembolso: new Date("2026-01-01"),
+    });
+
+    const sumaIntereses = cuotas.reduce((acc, c) => acc + c.interes.toNumber(), 0);
+    expect(sumaIntereses).toBeCloseTo(20_000, 2);
   });
 
   it("el capital se reparte en partes iguales y la última cuota absorbe el redondeo", () => {
