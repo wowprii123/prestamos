@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
-/** Fila de tabla que navega al hacer click en cualquier parte (no solo en el link interno). */
-export function FilaPrestamo({
+/** Fila de tabla que navega al hacer click en cualquier parte (no solo en un link interno). */
+export function FilaClickeable({
   href,
   children,
 }: {

@@ -1,4 +1,4 @@
-export { aplicarPago, saldoPendienteCuota } from "./aplicar";
+export { aplicarPago, saldoPendienteCuota, saldoPendientePrestamo } from "./aplicar";
 export { montoRecomendado } from "./recomendado";
 export type {
   AplicacionCalculada,

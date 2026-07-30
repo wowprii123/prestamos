@@ -1,6 +1,6 @@
 import { obtenerResumenCobros, type CuotaPorCobrar } from "@/lib/servicios/cobros";
 import { Card } from "@/components/ui/card";
-import { FilaPrestamo } from "@/components/prestamos/fila-prestamo";
+import { FilaClickeable } from "@/components/ui/fila-clickeable";
 import { formatearFecha, formatearMoneda } from "@/lib/formato";
 
 export default async function AdminCobrosPage() {
@@ -63,7 +63,7 @@ function TablaCuotasPorCobrar({
         </thead>
         <tbody className="divide-y divide-slate-100">
           {cuotas.map((cuota) => (
-            <FilaPrestamo key={cuota.cuotaId} href={`/admin/prestamos/${cuota.prestamoId}`}>
+            <FilaClickeable key={cuota.cuotaId} href={`/admin/prestamos/${cuota.prestamoId}`}>
               <td className="py-2 pr-4 font-medium text-slate-900">{cuota.cliente.nombre}</td>
               <td className="py-2 pr-4 text-slate-700">{cuota.cliente.telefono ?? "—"}</td>
               <td className="py-2 pr-4 text-slate-700">#{cuota.numero}</td>
@@ -87,7 +87,7 @@ function TablaCuotasPorCobrar({
                   </span>
                 )}
               </td>
-            </FilaPrestamo>
+            </FilaClickeable>
           ))}
         </tbody>
       </table>

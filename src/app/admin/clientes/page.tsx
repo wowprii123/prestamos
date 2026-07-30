@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listarClientesConResumen } from "@/lib/servicios/clientes";
+import { FilaClickeable } from "@/components/ui/fila-clickeable";
 import { formatearFecha } from "@/lib/formato";
 
 export default async function AdminClientesPage() {
@@ -35,7 +36,7 @@ export default async function AdminClientesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {clientes.map((cliente) => (
-                  <tr key={cliente.id} className="hover:bg-slate-50">
+                  <FilaClickeable key={cliente.id} href={`/admin/clientes/${cliente.id}`}>
                     <td className="px-4 py-3">
                       {cliente.foto ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -57,7 +58,7 @@ export default async function AdminClientesPage() {
                     <td className="px-4 py-3 text-slate-500">
                       {formatearFecha(cliente.creadoEn)}
                     </td>
-                  </tr>
+                  </FilaClickeable>
                 ))}
               </tbody>
             </table>

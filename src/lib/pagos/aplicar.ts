@@ -11,6 +11,14 @@ export function saldoPendienteCuota(cuota: CuotaPendiente): Decimal {
   return saldo.isNegative() ? new Decimal(0) : redondearMoneda(saldo);
 }
 
+/** Saldo pendiente total de un préstamo (suma del saldo de todas sus cuotas). */
+export function saldoPendientePrestamo(cuotas: CuotaPendiente[]): Decimal {
+  return cuotas.reduce(
+    (acumulado, cuota) => acumulado.plus(saldoPendienteCuota(cuota)),
+    new Decimal(0),
+  );
+}
+
 /**
  * Reparte `montoPago` entre las cuotas pendientes, de la más antigua a la
  * más reciente. Si el monto no cubre una cuota completa, esta queda en

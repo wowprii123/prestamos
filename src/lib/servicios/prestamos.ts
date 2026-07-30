@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import { Decimal } from "@/lib/dinero";
 import { generarTablaAmortizacion } from "@/lib/amortizacion";
+import { saldoPendientePrestamo } from "@/lib/pagos";
 import type { EstadoPrestamo, Periodo } from "@/generated/prisma/enums";
 
 export type FiltroEstadoPrestamo = "activos" | "finalizados";
@@ -63,7 +63,7 @@ export async function listarPrestamos(filtro: FiltroEstadoPrestamo = "activos") 
 
   return prestamos.map((prestamo) => ({
     ...prestamo,
-    saldoPendiente: calcularSaldoPendiente(prestamo.cuotas),
+    saldoPendiente: saldoPendientePrestamo(prestamo.cuotas),
   }));
 }
 
@@ -79,11 +79,4 @@ export async function obtenerPrestamo(id: string) {
       },
     },
   });
-}
-
-function calcularSaldoPendiente(cuotas: { valorCuota: Decimal.Value; montoPagado: Decimal.Value }[]): Decimal {
-  return cuotas.reduce(
-    (acc, cuota) => acc.plus(new Decimal(cuota.valorCuota).minus(cuota.montoPagado)),
-    new Decimal(0),
-  );
 }

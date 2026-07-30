@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listarPrestamos, type FiltroEstadoPrestamo } from "@/lib/servicios/prestamos";
 import { Badge } from "@/components/ui/badge";
-import { FilaPrestamo } from "@/components/prestamos/fila-prestamo";
+import { FilaClickeable } from "@/components/ui/fila-clickeable";
 import { FiltroEstadoTabs } from "@/components/prestamos/filtro-estado-tabs";
 import {
   formatearEstadoPrestamo,
@@ -57,7 +57,7 @@ export default async function AdminPrestamosPage({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {prestamos.map((prestamo) => (
-                  <FilaPrestamo key={prestamo.id} href={`/admin/prestamos/${prestamo.id}`}>
+                  <FilaClickeable key={prestamo.id} href={`/admin/prestamos/${prestamo.id}`}>
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/prestamos/${prestamo.id}`}
@@ -88,7 +88,7 @@ export default async function AdminPrestamosPage({
                     <td className="px-4 py-3 text-slate-500">
                       {formatearFecha(prestamo.fechaDesembolso)}
                     </td>
-                  </FilaPrestamo>
+                  </FilaClickeable>
                 ))}
               </tbody>
             </table>
