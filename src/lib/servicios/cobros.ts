@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Decimal } from "@/lib/dinero";
 import { addDiasUTC, diferenciaEnDias, inicioDeDiaUTC } from "@/lib/fecha-utc";
+import { ESTADOS_POR_FILTRO } from "@/lib/servicios/prestamos";
 
 export interface CuotaPorCobrar {
   cuotaId: string;
@@ -31,6 +32,7 @@ export async function obtenerResumenCobros(diasHaciaAdelante = 10): Promise<Resu
     where: {
       estado: { in: ["pendiente", "parcial"] },
       fechaVencimiento: { lte: limite },
+      prestamo: { estado: { in: ESTADOS_POR_FILTRO.activos } },
     },
     include: { prestamo: { include: { cliente: true } } },
     orderBy: { fechaVencimiento: "asc" },

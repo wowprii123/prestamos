@@ -67,6 +67,14 @@ export async function listarPrestamos(filtro: FiltroEstadoPrestamo = "activos") 
   }));
 }
 
+/** Marca el préstamo como cancelado. No modifica cuotas ni pagos existentes. */
+export async function anularPrestamo(id: string) {
+  return prisma.prestamo.update({
+    where: { id },
+    data: { estado: "cancelado" },
+  });
+}
+
 export async function obtenerPrestamo(id: string) {
   return prisma.prestamo.findUnique({
     where: { id },

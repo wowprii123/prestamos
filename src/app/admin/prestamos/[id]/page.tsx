@@ -9,6 +9,7 @@ import { DescargarExtracto } from "@/components/prestamos/descargar-extracto";
 import { formatearMoneda } from "@/lib/formato";
 import { RegistrarPago } from "./registrar-pago";
 import { EnviarExtracto } from "./enviar-extracto";
+import { AnularPrestamo } from "./anular-prestamo";
 
 export default async function DetallePrestamoPage({
   params,
@@ -41,10 +42,14 @@ export default async function DetallePrestamoPage({
 
       <Card>
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Registrar pago</h2>
-        <RegistrarPago
-          prestamoId={prestamo.id}
-          montoRecomendado={recomendado ? formatearMoneda(recomendado.toString()) : null}
-        />
+        {prestamo.estado === "cancelado" ? (
+          <p className="text-sm text-slate-500">Este préstamo fue anulado.</p>
+        ) : (
+          <RegistrarPago
+            prestamoId={prestamo.id}
+            montoRecomendado={recomendado ? formatearMoneda(recomendado.toString()) : null}
+          />
+        )}
       </Card>
 
       <Card>
@@ -66,6 +71,13 @@ export default async function DetallePrestamoPage({
         <DescargarExtracto prestamoId={prestamo.id} />
         <EnviarExtracto prestamoId={prestamo.id} />
       </Card>
+
+      {(prestamo.estado === "activo" || prestamo.estado === "en_mora") && (
+        <Card>
+          <h2 className="mb-1 text-sm font-semibold text-slate-900">Zona de riesgo</h2>
+          <AnularPrestamo prestamoId={prestamo.id} />
+        </Card>
+      )}
     </div>
   );
 }
