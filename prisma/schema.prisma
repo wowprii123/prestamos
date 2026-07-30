@@ -1,5 +1,5 @@
 // Esquema de dominio: sistema de préstamos tipo entidad financiera.
-// Sistema francés (cuota fija, interés sobre saldo). Ver src/lib/amortizacion.
+// Interés simple (fijo por cuota). Ver src/lib/amortizacion.
 
 generator client {
   provider = "prisma-client"
@@ -8,11 +8,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-}
-
-enum RolUsuario {
-  admin
-  cliente
 }
 
 enum Periodo {
@@ -52,30 +47,44 @@ enum EstadoEnvio {
   fallido
 }
 
+/** Usuario del sistema: siempre un admin (los clientes no tienen cuenta). */
 model Usuario {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  hashPassword String     @map("hash_password")
+  id           String   @id @default(cuid())
+  email        String   @unique
+  hashPassword String   @map("hash_password")
   nombre       String
-  rol          RolUsuario
   telefono     String?
-  activo       Boolean    @default(true)
-  creadoEn     DateTime   @default(now()) @map("creado_en")
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en")
 
-  prestamosComoCliente Prestamo[] @relation("PrestamosCliente")
-  prestamosCreados     Prestamo[] @relation("PrestamosCreador")
-  pagosRegistrados     Pago[]
+  prestamosCreados Prestamo[] @relation("PrestamosCreador")
+  pagosRegistrados Pago[]
 
   @@map("usuarios")
+}
+
+/** Cliente/prestatario: solo un registro de datos, sin acceso al sistema. */
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  direccion String
+  telefono  String?
+  /** Foto guardada como data URL (base64) directamente en la base de datos. */
+  foto      String?  @db.Text
+  creadoEn  DateTime @default(now()) @map("creado_en")
+
+  prestamos Prestamo[]
+
+  @@map("clientes")
 }
 
 model Prestamo {
   id              String         @id @default(cuid())
   clienteId       String         @map("cliente_id")
-  cliente         Usuario        @relation("PrestamosCliente", fields: [clienteId], references: [id])
+  cliente         Cliente        @relation(fields: [clienteId], references: [id])
   monto           Decimal        @db.Decimal(14, 2)
-  tasaMensual     Decimal        @map("tasa_mensual") @db.Decimal(6, 3)
-  tasaPeriodo     Decimal        @map("tasa_periodo") @db.Decimal(9, 6)
+  /** Tasa que se cobra completa en cada cuota (interés simple, no sobre saldo). */
+  tasaPorcentaje  Decimal        @map("tasa_porcentaje") @db.Decimal(6, 3)
   periodo         Periodo
   numeroCuotas    Int            @map("numero_cuotas")
   valorCuota      Decimal        @map("valor_cuota") @db.Decimal(14, 2)

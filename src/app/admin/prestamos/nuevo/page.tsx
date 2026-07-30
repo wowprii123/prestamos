@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { listarClientes } from "@/lib/servicios/usuarios";
+import { listarClientes } from "@/lib/servicios/clientes";
 import { NuevoPrestamoForm } from "./nuevo-prestamo-form";
 
 export default async function NuevoPrestamoPage() {

@@ -9,7 +9,7 @@ import {
 
 export interface DatosResumenPrestamo {
   monto: { toString(): string };
-  tasaMensual: { toString(): string };
+  tasaPorcentaje: { toString(): string };
   periodo: string;
   numeroCuotas: number;
   valorCuota: { toString(): string };
@@ -21,7 +21,7 @@ export function ResumenPrestamo({ prestamo }: { prestamo: DatosResumenPrestamo }
   return (
     <Card className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       <Campo etiqueta="Monto" valor={formatearMoneda(prestamo.monto.toString())} />
-      <Campo etiqueta="Tasa mensual" valor={`${prestamo.tasaMensual.toString()}%`} />
+      <Campo etiqueta="Tasa" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
       <Campo etiqueta="Período" valor={formatearPeriodo(prestamo.periodo)} />
       <Campo etiqueta="Cuotas" valor={String(prestamo.numeroCuotas)} />
       <Campo

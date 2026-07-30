@@ -47,7 +47,7 @@ export default async function AdminPrestamosPage({
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="px-4 py-3">Cliente</th>
                   <th className="px-4 py-3">Monto</th>
-                  <th className="px-4 py-3">Tasa mensual</th>
+                  <th className="px-4 py-3">Tasa</th>
                   <th className="px-4 py-3">Período</th>
                   <th className="px-4 py-3">Cuotas</th>
                   <th className="px-4 py-3 text-right">Saldo pendiente</th>
@@ -70,7 +70,7 @@ export default async function AdminPrestamosPage({
                       {formatearMoneda(prestamo.monto.toString())}
                     </td>
                     <td className="px-4 py-3 text-slate-700">
-                      {prestamo.tasaMensual.toString()}%
+                      {prestamo.tasaPorcentaje.toString()}%
                     </td>
                     <td className="px-4 py-3 text-slate-700">
                       {formatearPeriodo(prestamo.periodo)}

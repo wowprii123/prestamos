@@ -9,7 +9,7 @@ export interface CuotaPorCobrar {
   fechaVencimiento: Date;
   saldoPendiente: Decimal;
   diasParaVencer: number;
-  cliente: { nombre: string; email: string };
+  cliente: { nombre: string; telefono: string | null };
 }
 
 export interface ResumenCobros {
@@ -43,7 +43,7 @@ export async function obtenerResumenCobros(diasHaciaAdelante = 10): Promise<Resu
     fechaVencimiento: cuota.fechaVencimiento,
     saldoPendiente: new Decimal(cuota.valorCuota).minus(cuota.montoPagado),
     diasParaVencer: diferenciaEnDias(cuota.fechaVencimiento, hoy),
-    cliente: { nombre: cuota.prestamo.cliente.nombre, email: cuota.prestamo.cliente.email },
+    cliente: { nombre: cuota.prestamo.cliente.nombre, telefono: cuota.prestamo.cliente.telefono },
   }));
 
   return {

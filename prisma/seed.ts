@@ -5,7 +5,6 @@ import { generarTablaAmortizacion } from "../src/lib/amortizacion";
 
 async function main() {
   const hashAdmin = await bcrypt.hash("admin123", 10);
-  const hashCliente = await bcrypt.hash("cliente123", 10);
 
   const admin = await prisma.usuario.upsert({
     where: { email: "admin@prestamos.local" },
@@ -14,36 +13,35 @@ async function main() {
       email: "admin@prestamos.local",
       hashPassword: hashAdmin,
       nombre: "Administrador",
-      rol: "admin",
     },
   });
 
-  const cliente = await prisma.usuario.upsert({
-    where: { email: "cliente@prestamos.local" },
-    update: {},
-    create: {
-      email: "cliente@prestamos.local",
-      hashPassword: hashCliente,
-      nombre: "Cliente de Prueba",
-      rol: "cliente",
-      telefono: "+57 300 000 0000",
-    },
-  });
+  let cliente = await prisma.cliente.findFirst({ where: { nombre: "Cliente de Prueba" } });
+  if (!cliente) {
+    cliente = await prisma.cliente.create({
+      data: {
+        nombre: "Cliente de Prueba",
+        direccion: "Calle 10 # 20-30, Bogotá",
+        telefono: "+57 300 000 0000",
+      },
+    });
+  }
 
   const prestamoExistente = await prisma.prestamo.findFirst({
     where: { clienteId: cliente.id },
   });
 
   if (!prestamoExistente) {
-    const monto = 1_000_000;
-    const tasaMensualPorcentaje = 5;
+    // Ejemplo de referencia: 100.000 al 20%, 2 cuotas -> 70.000 c/u.
+    const monto = 100_000;
+    const tasaPorcentaje = 20;
     const periodo = "mensual" as const;
-    const numeroCuotas = 6;
+    const numeroCuotas = 2;
     const fechaDesembolso = new Date();
 
-    const { tasaPeriodo, valorCuota, cuotas } = generarTablaAmortizacion({
+    const { valorCuota, cuotas } = generarTablaAmortizacion({
       monto,
-      tasaMensualPorcentaje,
+      tasaPorcentaje,
       periodo,
       numeroCuotas,
       fechaDesembolso,
@@ -53,8 +51,7 @@ async function main() {
       data: {
         clienteId: cliente.id,
         monto,
-        tasaMensual: tasaMensualPorcentaje,
-        tasaPeriodo: tasaPeriodo.toNumber(),
+        tasaPorcentaje,
         periodo,
         numeroCuotas,
         valorCuota: valorCuota.toNumber(),
@@ -74,9 +71,8 @@ async function main() {
     });
   }
 
-  console.log("Seed completo. Usuarios de prueba:");
-  console.log("  admin@prestamos.local   / admin123");
-  console.log("  cliente@prestamos.local / cliente123");
+  console.log("Seed completo. Admin de prueba:");
+  console.log("  admin@prestamos.local / admin123");
 }
 
 main()

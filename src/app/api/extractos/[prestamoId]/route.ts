@@ -14,13 +14,9 @@ export async function GET(
   const { prestamoId } = await params;
   const prestamo = await prisma.prestamo.findUnique({
     where: { id: prestamoId },
-    select: { clienteId: true },
+    select: { id: true },
   });
   if (!prestamo) return new Response("Préstamo no encontrado", { status: 404 });
-
-  const esAdmin = session.user.rol === "admin";
-  const esDueño = session.user.rol === "cliente" && session.user.id === prestamo.clienteId;
-  if (!esAdmin && !esDueño) return new Response("No autorizado", { status: 403 });
 
   const tipo = request.nextUrl.searchParams.get("tipo") === "acumulado" ? "acumulado" : "mensual";
   const mesParam = request.nextUrl.searchParams.get("mes");

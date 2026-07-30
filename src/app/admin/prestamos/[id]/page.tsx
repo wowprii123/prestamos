@@ -34,7 +34,7 @@ export default async function DetallePrestamoPage({
         <h1 className="text-lg font-semibold text-slate-900">
           Préstamo de {prestamo.cliente.nombre}
         </h1>
-        <p className="text-sm text-slate-500">{prestamo.cliente.email}</p>
+        <p className="text-sm text-slate-500">{prestamo.cliente.direccion}</p>
       </div>
 
       <ResumenPrestamo prestamo={prestamo} />

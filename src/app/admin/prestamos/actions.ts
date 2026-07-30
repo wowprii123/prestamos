@@ -8,9 +8,7 @@ import { crearPrestamo } from "@/lib/servicios/prestamos";
 const esquemaPrestamo = z.object({
   clienteId: z.string().min(1, "Selecciona un cliente"),
   monto: z.coerce.number().positive("El monto debe ser mayor a cero"),
-  tasaMensualPorcentaje: z.coerce
-    .number()
-    .nonnegative("La tasa no puede ser negativa"),
+  tasaPorcentaje: z.coerce.number().nonnegative("La tasa no puede ser negativa"),
   periodo: z.enum(["diario", "semanal", "quincenal", "mensual"]),
   numeroCuotas: z.coerce.number().int().min(1, "Debe haber al menos 1 cuota"),
   fechaDesembolso: z.coerce.date(),
@@ -21,12 +19,12 @@ export async function crearPrestamoAction(
   formData: FormData,
 ): Promise<string | undefined> {
   const session = await auth();
-  if (!session || session.user.rol !== "admin") return "No autorizado";
+  if (!session) return "No autorizado";
 
   const parsed = esquemaPrestamo.safeParse({
     clienteId: formData.get("clienteId"),
     monto: formData.get("monto"),
-    tasaMensualPorcentaje: formData.get("tasaMensualPorcentaje"),
+    tasaPorcentaje: formData.get("tasaPorcentaje"),
     periodo: formData.get("periodo"),
     numeroCuotas: formData.get("numeroCuotas"),
     fechaDesembolso: formData.get("fechaDesembolso"),

@@ -4,5 +4,4 @@ export type {
   ParametrosAmortizacion,
   TablaAmortizacion,
 } from "./calcular";
-export { tasaMensualATasaPeriodo } from "./tasas";
 export { fechaVencimientoCuota } from "./fechas";

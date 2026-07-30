@@ -13,7 +13,7 @@ export const ESTADOS_POR_FILTRO: Record<FiltroEstadoPrestamo, EstadoPrestamo[]> 
 export interface CrearPrestamoInput {
   clienteId: string;
   monto: number;
-  tasaMensualPorcentaje: number;
+  tasaPorcentaje: number;
   periodo: Periodo;
   numeroCuotas: number;
   fechaDesembolso: Date;
@@ -23,7 +23,7 @@ export interface CrearPrestamoInput {
 export async function crearPrestamo(input: CrearPrestamoInput) {
   const tabla = generarTablaAmortizacion({
     monto: input.monto,
-    tasaMensualPorcentaje: input.tasaMensualPorcentaje,
+    tasaPorcentaje: input.tasaPorcentaje,
     periodo: input.periodo,
     numeroCuotas: input.numeroCuotas,
     fechaDesembolso: input.fechaDesembolso,
@@ -33,8 +33,7 @@ export async function crearPrestamo(input: CrearPrestamoInput) {
     data: {
       clienteId: input.clienteId,
       monto: input.monto,
-      tasaMensual: input.tasaMensualPorcentaje,
-      tasaPeriodo: tabla.tasaPeriodo.toNumber(),
+      tasaPorcentaje: input.tasaPorcentaje,
       periodo: input.periodo,
       numeroCuotas: input.numeroCuotas,
       valorCuota: tabla.valorCuota.toNumber(),
@@ -59,19 +58,6 @@ export async function listarPrestamos(filtro: FiltroEstadoPrestamo = "activos") 
   const prestamos = await prisma.prestamo.findMany({
     where: { estado: { in: ESTADOS_POR_FILTRO[filtro] } },
     include: { cliente: true, cuotas: true },
-    orderBy: { creadoEn: "desc" },
-  });
-
-  return prestamos.map((prestamo) => ({
-    ...prestamo,
-    saldoPendiente: calcularSaldoPendiente(prestamo.cuotas),
-  }));
-}
-
-export async function listarPrestamosDeCliente(clienteId: string) {
-  const prestamos = await prisma.prestamo.findMany({
-    where: { clienteId },
-    include: { cuotas: { orderBy: { numero: "asc" } } },
     orderBy: { creadoEn: "desc" },
   });
 

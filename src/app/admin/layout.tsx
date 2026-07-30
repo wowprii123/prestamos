@@ -8,12 +8,12 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session || session.user.rol !== "admin") redirect("/login");
+  if (!session) redirect("/login");
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row">
       <Sidebar
-        titulo="Préstamos · Admin"
+        titulo="Préstamos"
         nombre={session.user.name ?? session.user.email ?? ""}
         enlaces={[
           { href: "/admin/clientes", label: "Clientes" },

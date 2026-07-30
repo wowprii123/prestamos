@@ -86,10 +86,14 @@ function construirCorreoExtracto(datos: DatosExtracto) {
 /**
  * Genera el PDF, lo envía por ZeptoMail y registra el resultado (éxito o
  * fallo) en `extractos` y `correos_enviados` para poder auditar envíos.
+ *
+ * El cliente no tiene correo propio (ver Cliente en el schema), así que el
+ * destino se escribe a mano cada vez que se envía un extracto.
  */
 export async function enviarExtractoPorCorreo(
   prestamoId: string,
   tipo: TipoExtracto,
+  correoDestino: string,
   fechaReferencia: Date = new Date(),
 ) {
   const datos = await obtenerDatosExtracto(prestamoId, tipo, fechaReferencia);
@@ -100,7 +104,7 @@ export async function enviarExtractoPorCorreo(
   try {
     const respuesta = await enviarCorreoZeptoMail({
       destinatario: {
-        email: datos.prestamo.cliente.email,
+        email: correoDestino,
         nombre: datos.prestamo.cliente.nombre,
       },
       asunto,
@@ -112,10 +116,10 @@ export async function enviarExtractoPorCorreo(
       },
     });
 
-    await registrarResultadoEnvio(extracto.id, datos.prestamo.cliente.email, "enviado", respuesta);
+    await registrarResultadoEnvio(extracto.id, correoDestino, "enviado", respuesta);
   } catch (error) {
     const detalleError = { error: error instanceof Error ? error.message : String(error) };
-    await registrarResultadoEnvio(extracto.id, datos.prestamo.cliente.email, "fallido", detalleError);
+    await registrarResultadoEnvio(extracto.id, correoDestino, "fallido", detalleError);
     throw error;
   }
 

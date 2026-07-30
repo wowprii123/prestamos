@@ -54,6 +54,7 @@ function TablaCuotasPorCobrar({
         <thead>
           <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
             <th className="py-2 pr-4">Cliente</th>
+            <th className="py-2 pr-4">Teléfono</th>
             <th className="py-2 pr-4">Cuota</th>
             <th className="py-2 pr-4">Vencimiento</th>
             <th className="py-2 pr-4 text-right">Saldo pendiente</th>
@@ -64,6 +65,7 @@ function TablaCuotasPorCobrar({
           {cuotas.map((cuota) => (
             <FilaPrestamo key={cuota.cuotaId} href={`/admin/prestamos/${cuota.prestamoId}`}>
               <td className="py-2 pr-4 font-medium text-slate-900">{cuota.cliente.nombre}</td>
+              <td className="py-2 pr-4 text-slate-700">{cuota.cliente.telefono ?? "—"}</td>
               <td className="py-2 pr-4 text-slate-700">#{cuota.numero}</td>
               <td className="py-2 pr-4 text-slate-700">
                 {formatearFecha(cuota.fechaVencimiento)}

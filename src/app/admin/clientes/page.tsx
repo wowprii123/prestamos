@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listarClientesConResumen } from "@/lib/servicios/usuarios";
+import { listarClientesConResumen } from "@/lib/servicios/clientes";
 import { formatearFecha } from "@/lib/formato";
 
 export default async function AdminClientesPage() {
@@ -25,8 +25,9 @@ export default async function AdminClientesPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3">Foto</th>
                   <th className="px-4 py-3">Nombre</th>
-                  <th className="px-4 py-3">Correo</th>
+                  <th className="px-4 py-3">Dirección</th>
                   <th className="px-4 py-3">Teléfono</th>
                   <th className="px-4 py-3 text-right">Préstamos</th>
                   <th className="px-4 py-3">Registrado</th>
@@ -35,11 +36,23 @@ export default async function AdminClientesPage() {
               <tbody className="divide-y divide-slate-100">
                 {clientes.map((cliente) => (
                   <tr key={cliente.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3">
+                      {cliente.foto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={cliente.foto}
+                          alt={cliente.nombre}
+                          className="h-9 w-9 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-9 w-9 rounded-full bg-slate-100" />
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium text-slate-900">{cliente.nombre}</td>
-                    <td className="px-4 py-3 text-slate-700">{cliente.email}</td>
+                    <td className="px-4 py-3 text-slate-700">{cliente.direccion}</td>
                     <td className="px-4 py-3 text-slate-700">{cliente.telefono ?? "—"}</td>
                     <td className="px-4 py-3 text-right text-slate-700">
-                      {cliente._count.prestamosComoCliente}
+                      {cliente._count.prestamos}
                     </td>
                     <td className="px-4 py-3 text-slate-500">
                       {formatearFecha(cliente.creadoEn)}

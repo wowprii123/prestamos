@@ -55,20 +55,23 @@ export function NuevoPrestamoForm({ clientes }: { clientes: ClienteOpcion[] }) {
 
         <div>
           <label
-            htmlFor="tasaMensualPorcentaje"
+            htmlFor="tasaPorcentaje"
             className="block text-sm font-medium text-slate-700"
           >
-            Tasa mensual (%)
+            Tasa (%)
           </label>
           <input
-            id="tasaMensualPorcentaje"
-            name="tasaMensualPorcentaje"
+            id="tasaPorcentaje"
+            name="tasaPorcentaje"
             type="number"
             min="0"
             step="0.001"
             required
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
           />
+          <p className="mt-1 text-xs text-slate-500">
+            Se cobra completa en cada cuota (no se reduce con el saldo).
+          </p>
         </div>
       </div>
 

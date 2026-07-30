@@ -7,7 +7,7 @@ import { registrarPago } from "@/lib/servicios/pagos";
 
 export async function registrarPagoRecomendadoAction(prestamoId: string) {
   const session = await auth();
-  if (!session || session.user.rol !== "admin") throw new Error("No autorizado");
+  if (!session) throw new Error("No autorizado");
 
   await registrarPago({
     prestamoId,
@@ -30,7 +30,7 @@ export async function registrarPagoLibreAction(
   formData: FormData,
 ): Promise<string | undefined> {
   const session = await auth();
-  if (!session || session.user.rol !== "admin") return "No autorizado";
+  if (!session) return "No autorizado";
 
   const parsed = esquemaPagoLibre.safeParse({
     prestamoId: formData.get("prestamoId"),

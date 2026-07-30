@@ -13,6 +13,7 @@ export interface ResultadoEnvioExtracto {
 const esquemaEnvio = z.object({
   prestamoId: z.string().min(1),
   tipo: z.enum(["mensual", "acumulado"]),
+  correoDestino: z.string().email("Ingresa un correo válido"),
   mes: z.string().optional(),
 });
 
@@ -21,17 +22,18 @@ export async function enviarExtractoAction(
   formData: FormData,
 ): Promise<ResultadoEnvioExtracto> {
   const session = await auth();
-  if (!session || session.user.rol !== "admin") {
+  if (!session) {
     return { ok: false, mensaje: "No autorizado" };
   }
 
   const parsed = esquemaEnvio.safeParse({
     prestamoId: formData.get("prestamoId"),
     tipo: formData.get("tipo"),
+    correoDestino: formData.get("correoDestino"),
     mes: formData.get("mes") || undefined,
   });
   if (!parsed.success) {
-    return { ok: false, mensaje: "Datos inválidos" };
+    return { ok: false, mensaje: parsed.error.issues[0].message };
   }
 
   const fechaReferencia = parsed.data.mes
@@ -39,7 +41,12 @@ export async function enviarExtractoAction(
     : new Date();
 
   try {
-    await enviarExtractoPorCorreo(parsed.data.prestamoId, parsed.data.tipo, fechaReferencia);
+    await enviarExtractoPorCorreo(
+      parsed.data.prestamoId,
+      parsed.data.tipo,
+      parsed.data.correoDestino,
+      fechaReferencia,
+    );
   } catch (error) {
     return {
       ok: false,

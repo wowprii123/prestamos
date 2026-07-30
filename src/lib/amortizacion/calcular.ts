@@ -1,6 +1,5 @@
 import { Decimal, redondearMoneda } from "@/lib/dinero";
 import type { Periodo } from "@/generated/prisma/enums";
-import { tasaMensualATasaPeriodo } from "./tasas";
 import { fechaVencimientoCuota } from "./fechas";
 
 export interface CuotaCalculada {
@@ -14,81 +13,61 @@ export interface CuotaCalculada {
 
 export interface ParametrosAmortizacion {
   monto: Decimal.Value;
-  tasaMensualPorcentaje: Decimal.Value;
+  /** Tasa que se cobra completa en cada cuota (no se convierte por período). */
+  tasaPorcentaje: Decimal.Value;
+  /** Determina la cadencia de los vencimientos; no afecta el cálculo de interés. */
   periodo: Periodo;
   numeroCuotas: number;
   fechaDesembolso: Date;
 }
 
 export interface TablaAmortizacion {
-  tasaPeriodo: Decimal;
   valorCuota: Decimal;
   cuotas: CuotaCalculada[];
 }
 
 /**
- * Genera la tabla de amortización por sistema francés: cuota fija, interés
- * calculado sobre el saldo pendiente. La última cuota absorbe el residuo de
- * redondeo para que el saldo cierre exactamente en cero.
+ * Genera la tabla de amortización por interés simple (fijo): el capital se
+ * reparte en partes iguales entre las cuotas, y el interés es el mismo
+ * monto en cada cuota (monto prestado × tasa), sin importar cuánto capital
+ * ya se haya pagado. La última cuota absorbe el residuo de redondeo del
+ * capital para que el saldo cierre exactamente en cero.
  */
 export function generarTablaAmortizacion(
   parametros: ParametrosAmortizacion,
 ): TablaAmortizacion {
-  const { monto, tasaMensualPorcentaje, periodo, numeroCuotas, fechaDesembolso } =
-    parametros;
+  const { monto, tasaPorcentaje, periodo, numeroCuotas, fechaDesembolso } = parametros;
 
   if (numeroCuotas < 1) {
     throw new Error("El número de cuotas debe ser al menos 1");
   }
 
   const montoDecimal = new Decimal(monto);
-  const tasaPeriodo = tasaMensualATasaPeriodo(tasaMensualPorcentaje, periodo);
+  const tasaFraccion = new Decimal(tasaPorcentaje).div(100);
 
-  const valorCuota = calcularCuotaFija(montoDecimal, tasaPeriodo, numeroCuotas);
+  const interesPorCuota = redondearMoneda(montoDecimal.mul(tasaFraccion));
+  const capitalBase = redondearMoneda(montoDecimal.div(numeroCuotas));
 
   const cuotas: CuotaCalculada[] = [];
-  let saldoAnterior = montoDecimal;
+  let saldoRestante = montoDecimal;
 
   for (let numero = 1; numero <= numeroCuotas; numero++) {
     const esUltimaCuota = numero === numeroCuotas;
-    const interes = redondearMoneda(saldoAnterior.mul(tasaPeriodo));
+    const capital = esUltimaCuota ? saldoRestante : capitalBase;
 
-    const capital = esUltimaCuota
-      ? saldoAnterior
-      : redondearMoneda(valorCuota.minus(interes));
-
-    const saldoRestante = esUltimaCuota
+    saldoRestante = esUltimaCuota
       ? new Decimal(0)
-      : redondearMoneda(saldoAnterior.minus(capital));
+      : redondearMoneda(saldoRestante.minus(capital));
 
     cuotas.push({
       numero,
       fechaVencimiento: fechaVencimientoCuota(fechaDesembolso, periodo, numero),
-      valorCuota: esUltimaCuota ? redondearMoneda(interes.plus(capital)) : valorCuota,
-      interes,
+      valorCuota: redondearMoneda(capital.plus(interesPorCuota)),
+      interes: interesPorCuota,
       capital,
       saldoRestante,
     });
-
-    saldoAnterior = saldoRestante;
   }
 
-  return { tasaPeriodo, valorCuota, cuotas };
-}
-
-/** cuota = monto * i / (1 - (1+i)^-n) */
-function calcularCuotaFija(
-  monto: Decimal,
-  tasaPeriodo: Decimal,
-  numeroCuotas: number,
-): Decimal {
-  if (tasaPeriodo.isZero()) {
-    return redondearMoneda(monto.div(numeroCuotas));
-  }
-
-  const factor = tasaPeriodo.div(
-    new Decimal(1).minus(new Decimal(1).plus(tasaPeriodo).pow(-numeroCuotas)),
-  );
-
-  return redondearMoneda(monto.mul(factor));
+  return { valorCuota: redondearMoneda(capitalBase.plus(interesPorCuota)), cuotas };
 }

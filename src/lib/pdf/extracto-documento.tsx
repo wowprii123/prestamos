@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
 import type { DatosExtracto } from "@/lib/servicios/extractos";
 import {
   formatearEstadoCuota,
@@ -42,6 +42,12 @@ const estilos = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
   },
+  fotoCliente: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    objectFit: "cover",
+  },
 });
 
 export function ExtractoDocumento({ datos }: { datos: DatosExtracto }) {
@@ -57,22 +63,27 @@ export function ExtractoDocumento({ datos }: { datos: DatosExtracto }) {
           Período: {formatearFecha(periodoInicio)} – {formatearFecha(periodoFin)}
         </Text>
 
-        <View style={estilos.seccion}>
-          <Text style={estilos.seccionTitulo}>Cliente</Text>
-          <View style={estilos.filaCampos}>
-            <Campo etiqueta="Nombre" valor={prestamo.cliente.nombre} />
-            <Campo etiqueta="Correo" valor={prestamo.cliente.email} />
-            {prestamo.cliente.telefono && (
-              <Campo etiqueta="Teléfono" valor={prestamo.cliente.telefono} />
-            )}
+        <View style={[estilos.seccion, { flexDirection: "row", alignItems: "flex-start" }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={estilos.seccionTitulo}>Cliente</Text>
+            <View style={estilos.filaCampos}>
+              <Campo etiqueta="Nombre" valor={prestamo.cliente.nombre} />
+              <Campo etiqueta="Dirección" valor={prestamo.cliente.direccion} />
+              {prestamo.cliente.telefono && (
+                <Campo etiqueta="Teléfono" valor={prestamo.cliente.telefono} />
+              )}
+            </View>
           </View>
+          {prestamo.cliente.foto && (
+            <Image src={prestamo.cliente.foto} style={estilos.fotoCliente} />
+          )}
         </View>
 
         <View style={estilos.seccion}>
           <Text style={estilos.seccionTitulo}>Préstamo</Text>
           <View style={estilos.filaCampos}>
             <Campo etiqueta="Monto" valor={formatearMoneda(prestamo.monto.toString())} />
-            <Campo etiqueta="Tasa mensual" valor={`${prestamo.tasaMensual.toString()}%`} />
+            <Campo etiqueta="Tasa" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
             <Campo etiqueta="Período de pago" valor={formatearPeriodo(prestamo.periodo)} />
             <Campo etiqueta="N° de cuotas" valor={String(prestamo.numeroCuotas)} />
             <Campo
