@@ -113,7 +113,7 @@ describe("generarTablaAmortizacion (interés simple, tasa mensual prorrateada po
     expect(cuotas[3].fechaVencimiento.toISOString().slice(0, 10)).toBe("2026-01-29");
   });
 
-  it("semanal y diario prorratean sobre 30 días (7/30 y 1/30)", () => {
+  it("semanal prorratea a un cuarto del mes (mes = 4 semanas) y diario a 1/30", () => {
     const monto = 300_000;
     const tasaMensualPorcentaje = 30;
 
@@ -124,7 +124,7 @@ describe("generarTablaAmortizacion (interés simple, tasa mensual prorrateada po
       numeroCuotas: 1,
       fechaDesembolso: new Date("2026-01-01"),
     });
-    expect(semanales[0].interes.toNumber()).toBeCloseTo((300_000 * 0.3 * 7) / 30, 2);
+    expect(semanales[0].interes.toNumber()).toBeCloseTo((300_000 * 0.3) / 4, 2);
 
     const { cuotas: diarias } = generarTablaAmortizacion({
       monto,

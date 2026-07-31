@@ -28,11 +28,12 @@ export interface TablaAmortizacion {
 /**
  * Fracción del mes que representa cada período de pago. El interés de una
  * cuota es la tasa mensual prorrateada por esta fracción: una cuota
- * quincenal cobra la mitad del interés mensual, una semanal 7/30, etc.
+ * quincenal cobra la mitad del interés mensual, una semanal un cuarto (el
+ * mes se redondea a 4 semanas), etc.
  */
 const FACTOR_PERIODO: Record<Periodo, Decimal.Value> = {
   diario: new Decimal(1).div(30),
-  semanal: new Decimal(7).div(30),
+  semanal: new Decimal(1).div(4),
   quincenal: new Decimal(1).div(2),
   mensual: new Decimal(1),
 };
