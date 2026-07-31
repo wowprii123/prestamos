@@ -65,7 +65,7 @@ export default async function DetalleClientePage({
               <thead>
                 <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
                   <th className="py-2 pr-4">Monto</th>
-                  <th className="py-2 pr-4">Tasa</th>
+                  <th className="py-2 pr-4">Tasa mensual</th>
                   <th className="py-2 pr-4">Período</th>
                   <th className="py-2 pr-4 text-right">Saldo pendiente</th>
                   <th className="py-2 pr-4">Estado</th>

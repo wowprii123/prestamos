@@ -58,7 +58,7 @@ export function NuevoPrestamoForm({ clientes }: { clientes: ClienteOpcion[] }) {
             htmlFor="tasaPorcentaje"
             className="block text-sm font-medium text-slate-700"
           >
-            Tasa (%)
+            Tasa mensual (%)
           </label>
           <input
             id="tasaPorcentaje"
@@ -70,7 +70,7 @@ export function NuevoPrestamoForm({ clientes }: { clientes: ClienteOpcion[] }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
           />
           <p className="mt-1 text-xs text-slate-500">
-            Se cobra completa en cada cuota (no se reduce con el saldo).
+            Se prorratea según el período: quincenal cobra la mitad por cuota, semanal 7/30, diario 1/30.
           </p>
         </div>
       </div>

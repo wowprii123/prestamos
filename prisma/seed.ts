@@ -7,10 +7,10 @@ async function main() {
   const hashAdmin = await bcrypt.hash("admin123", 10);
 
   const admin = await prisma.usuario.upsert({
-    where: { email: "admin@prestamos.local" },
+    where: { email: "davidjaramillo1191@gamil.com" },
     update: {},
     create: {
-      email: "admin@prestamos.local",
+      email: "davidjaramillo1191@gamil.com",
       hashPassword: hashAdmin,
       nombre: "Administrador",
     },
@@ -32,7 +32,7 @@ async function main() {
   });
 
   if (!prestamoExistente) {
-    // Ejemplo de referencia: 100.000 al 20%, 2 cuotas -> 60.000 c/u.
+    // Ejemplo de referencia: 100.000 al 20% mensual, 2 cuotas -> 70.000 c/u.
     const monto = 100_000;
     const tasaPorcentaje = 20;
     const periodo = "mensual" as const;
@@ -41,7 +41,7 @@ async function main() {
 
     const { valorCuota, cuotas } = generarTablaAmortizacion({
       monto,
-      tasaPorcentaje,
+      tasaMensualPorcentaje: tasaPorcentaje,
       periodo,
       numeroCuotas,
       fechaDesembolso,

@@ -1,62 +1,66 @@
 import { describe, expect, it } from "vitest";
 import { generarTablaAmortizacion } from "./calcular";
 
-describe("generarTablaAmortizacion (interés simple)", () => {
-  it("reproduce el ejemplo exacto: 100.000 al 20%, 2 cuotas -> 60.000 c/u", () => {
+describe("generarTablaAmortizacion (interés simple, tasa mensual prorrateada por período)", () => {
+  it("mensual: 100.000 al 20%, 4 cuotas -> 45.000 c/u (interés 20.000/cuota, total 80.000)", () => {
     const { valorCuota, cuotas } = generarTablaAmortizacion({
       monto: 100_000,
-      tasaPorcentaje: 20,
+      tasaMensualPorcentaje: 20,
+      periodo: "mensual",
+      numeroCuotas: 4,
+      fechaDesembolso: new Date("2026-01-01"),
+    });
+
+    expect(valorCuota.toNumber()).toBe(45_000);
+    for (const cuota of cuotas) {
+      expect(cuota.capital.toNumber()).toBe(25_000);
+      expect(cuota.interes.toNumber()).toBe(20_000);
+      expect(cuota.valorCuota.toNumber()).toBe(45_000);
+    }
+
+    const interesTotal = cuotas.reduce((acc, c) => acc + c.interes.toNumber(), 0);
+    expect(interesTotal).toBe(80_000);
+    expect(cuotas.at(-1)!.saldoRestante.toNumber()).toBe(0);
+  });
+
+  it("quincenal: 100.000 al 20% mensual, 4 cuotas -> 35.000 c/u (interés 10.000/cuota, total 40.000)", () => {
+    const { valorCuota, cuotas } = generarTablaAmortizacion({
+      monto: 100_000,
+      tasaMensualPorcentaje: 20,
+      periodo: "quincenal",
+      numeroCuotas: 4,
+      fechaDesembolso: new Date("2026-01-01"),
+    });
+
+    expect(valorCuota.toNumber()).toBe(35_000);
+    for (const cuota of cuotas) {
+      expect(cuota.capital.toNumber()).toBe(25_000);
+      expect(cuota.interes.toNumber()).toBe(10_000);
+      expect(cuota.valorCuota.toNumber()).toBe(35_000);
+    }
+
+    const interesTotal = cuotas.reduce((acc, c) => acc + c.interes.toNumber(), 0);
+    expect(interesTotal).toBe(40_000);
+    expect(cuotas.at(-1)!.saldoRestante.toNumber()).toBe(0);
+  });
+
+  it("el ejemplo original (100.000 al 20% mensual, 2 cuotas) da 70.000 c/u", () => {
+    const { cuotas } = generarTablaAmortizacion({
+      monto: 100_000,
+      tasaMensualPorcentaje: 20,
       periodo: "mensual",
       numeroCuotas: 2,
       fechaDesembolso: new Date("2026-01-01"),
     });
 
-    expect(valorCuota.toNumber()).toBe(60_000);
-    expect(cuotas).toHaveLength(2);
-
-    expect(cuotas[0].capital.toNumber()).toBe(50_000);
-    expect(cuotas[0].interes.toNumber()).toBe(10_000);
-    expect(cuotas[0].valorCuota.toNumber()).toBe(60_000);
-    expect(cuotas[0].saldoRestante.toNumber()).toBe(50_000);
-
-    expect(cuotas[1].capital.toNumber()).toBe(50_000);
-    expect(cuotas[1].interes.toNumber()).toBe(10_000);
-    expect(cuotas[1].valorCuota.toNumber()).toBe(60_000);
-    expect(cuotas[1].saldoRestante.toNumber()).toBe(0);
-  });
-
-  it("el interés total (monto x tasa) se reparte en partes iguales entre las cuotas", () => {
-    const { cuotas } = generarTablaAmortizacion({
-      monto: 1_000_000,
-      tasaPorcentaje: 10,
-      periodo: "mensual",
-      numeroCuotas: 5,
-      fechaDesembolso: new Date("2026-01-01"),
-    });
-
-    const interesPorCuotaEsperado = 20_000; // (1.000.000 * 10%) / 5
-    for (const cuota of cuotas) {
-      expect(cuota.interes.toNumber()).toBe(interesPorCuotaEsperado);
-    }
-  });
-
-  it("la suma de los intereses de todas las cuotas es exacta (monto x tasa), con residuo en la última", () => {
-    const { cuotas } = generarTablaAmortizacion({
-      monto: 100_000,
-      tasaPorcentaje: 20,
-      periodo: "mensual",
-      numeroCuotas: 3,
-      fechaDesembolso: new Date("2026-01-01"),
-    });
-
-    const sumaIntereses = cuotas.reduce((acc, c) => acc + c.interes.toNumber(), 0);
-    expect(sumaIntereses).toBeCloseTo(20_000, 2);
+    expect(cuotas[0].valorCuota.toNumber()).toBe(70_000);
+    expect(cuotas[1].valorCuota.toNumber()).toBe(70_000);
   });
 
   it("el capital se reparte en partes iguales y la última cuota absorbe el redondeo", () => {
     const { cuotas } = generarTablaAmortizacion({
       monto: 100_000,
-      tasaPorcentaje: 20,
+      tasaMensualPorcentaje: 20,
       periodo: "mensual",
       numeroCuotas: 3,
       fechaDesembolso: new Date("2026-01-01"),
@@ -73,7 +77,7 @@ describe("generarTablaAmortizacion (interés simple)", () => {
   it("el saldo restante de la última cuota es exactamente cero", () => {
     const { cuotas } = generarTablaAmortizacion({
       monto: 500_000,
-      tasaPorcentaje: 8,
+      tasaMensualPorcentaje: 8,
       periodo: "quincenal",
       numeroCuotas: 4,
       fechaDesembolso: new Date("2026-01-01"),
@@ -86,7 +90,7 @@ describe("generarTablaAmortizacion (interés simple)", () => {
     const monto = 750_000;
     const { cuotas } = generarTablaAmortizacion({
       monto,
-      tasaPorcentaje: 15,
+      tasaMensualPorcentaje: 15,
       periodo: "semanal",
       numeroCuotas: 7,
       fechaDesembolso: new Date("2026-01-01"),
@@ -99,7 +103,7 @@ describe("generarTablaAmortizacion (interés simple)", () => {
   it("las fechas de vencimiento avanzan según el período elegido", () => {
     const { cuotas } = generarTablaAmortizacion({
       monto: 300_000,
-      tasaPorcentaje: 5,
+      tasaMensualPorcentaje: 5,
       periodo: "semanal",
       numeroCuotas: 4,
       fechaDesembolso: new Date("2026-01-01"),
@@ -109,10 +113,33 @@ describe("generarTablaAmortizacion (interés simple)", () => {
     expect(cuotas[3].fechaVencimiento.toISOString().slice(0, 10)).toBe("2026-01-29");
   });
 
+  it("semanal y diario prorratean sobre 30 días (7/30 y 1/30)", () => {
+    const monto = 300_000;
+    const tasaMensualPorcentaje = 30;
+
+    const { cuotas: semanales } = generarTablaAmortizacion({
+      monto,
+      tasaMensualPorcentaje,
+      periodo: "semanal",
+      numeroCuotas: 1,
+      fechaDesembolso: new Date("2026-01-01"),
+    });
+    expect(semanales[0].interes.toNumber()).toBeCloseTo((300_000 * 0.3 * 7) / 30, 2);
+
+    const { cuotas: diarias } = generarTablaAmortizacion({
+      monto,
+      tasaMensualPorcentaje,
+      periodo: "diario",
+      numeroCuotas: 1,
+      fechaDesembolso: new Date("2026-01-01"),
+    });
+    expect(diarias[0].interes.toNumber()).toBeCloseTo((300_000 * 0.3 * 1) / 30, 2);
+  });
+
   it("tasa de 0% deja el interés en cero y reparte solo capital", () => {
     const { cuotas } = generarTablaAmortizacion({
       monto: 90_000,
-      tasaPorcentaje: 0,
+      tasaMensualPorcentaje: 0,
       periodo: "mensual",
       numeroCuotas: 3,
       fechaDesembolso: new Date("2026-01-01"),
@@ -128,7 +155,7 @@ describe("generarTablaAmortizacion (interés simple)", () => {
     expect(() =>
       generarTablaAmortizacion({
         monto: 100_000,
-        tasaPorcentaje: 20,
+        tasaMensualPorcentaje: 20,
         periodo: "mensual",
         numeroCuotas: 0,
         fechaDesembolso: new Date("2026-01-01"),

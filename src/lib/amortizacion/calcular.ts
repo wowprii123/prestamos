@@ -13,9 +13,8 @@ export interface CuotaCalculada {
 
 export interface ParametrosAmortizacion {
   monto: Decimal.Value;
-  /** Tasa sobre el monto total del préstamo (no por cuota, no se convierte por período). */
-  tasaPorcentaje: Decimal.Value;
-  /** Determina la cadencia de los vencimientos; no afecta el cálculo de interés. */
+  /** Tasa mensual; se prorratea según el período de pago (ver FACTOR_PERIODO). */
+  tasaMensualPorcentaje: Decimal.Value;
   periodo: Periodo;
   numeroCuotas: number;
   fechaDesembolso: Date;
@@ -27,30 +26,43 @@ export interface TablaAmortizacion {
 }
 
 /**
- * Genera la tabla de amortización por interés simple (fijo): el interés
- * total del préstamo (monto × tasa) y el capital se reparten en partes
- * iguales entre las cuotas. La última cuota absorbe el residuo de redondeo
- * de ambos para que capital e interés cierren exactos.
+ * Fracción del mes que representa cada período de pago. El interés de una
+ * cuota es la tasa mensual prorrateada por esta fracción: una cuota
+ * quincenal cobra la mitad del interés mensual, una semanal 7/30, etc.
+ */
+const FACTOR_PERIODO: Record<Periodo, Decimal.Value> = {
+  diario: new Decimal(1).div(30),
+  semanal: new Decimal(7).div(30),
+  quincenal: new Decimal(1).div(2),
+  mensual: new Decimal(1),
+};
+
+/**
+ * Genera la tabla de amortización por interés simple (fijo): el capital se
+ * reparte en partes iguales entre las cuotas (la última absorbe el residuo
+ * de redondeo para que el saldo cierre en cero), y el interés de cada cuota
+ * es la tasa mensual prorrateada por el período de pago, aplicada siempre
+ * sobre el monto original (no sobre el saldo restante).
  */
 export function generarTablaAmortizacion(
   parametros: ParametrosAmortizacion,
 ): TablaAmortizacion {
-  const { monto, tasaPorcentaje, periodo, numeroCuotas, fechaDesembolso } = parametros;
+  const { monto, tasaMensualPorcentaje, periodo, numeroCuotas, fechaDesembolso } = parametros;
 
   if (numeroCuotas < 1) {
     throw new Error("El número de cuotas debe ser al menos 1");
   }
 
   const montoDecimal = new Decimal(monto);
-  const tasaFraccion = new Decimal(tasaPorcentaje).div(100);
+  const tasaMensualFraccion = new Decimal(tasaMensualPorcentaje).div(100);
 
-  const interesTotal = redondearMoneda(montoDecimal.mul(tasaFraccion));
-  const interesPorCuotaBase = redondearMoneda(interesTotal.div(numeroCuotas));
+  const interesPorCuota = redondearMoneda(
+    montoDecimal.mul(tasaMensualFraccion).mul(FACTOR_PERIODO[periodo]),
+  );
   const capitalBase = redondearMoneda(montoDecimal.div(numeroCuotas));
 
   const cuotas: CuotaCalculada[] = [];
   let saldoRestante = montoDecimal;
-  let interesAcumulado = new Decimal(0);
 
   for (let numero = 1; numero <= numeroCuotas; numero++) {
     const esUltimaCuota = numero === numeroCuotas;
@@ -60,20 +72,15 @@ export function generarTablaAmortizacion(
       ? new Decimal(0)
       : redondearMoneda(saldoRestante.minus(capital));
 
-    const interes = esUltimaCuota
-      ? redondearMoneda(interesTotal.minus(interesAcumulado))
-      : interesPorCuotaBase;
-    interesAcumulado = interesAcumulado.plus(interes);
-
     cuotas.push({
       numero,
       fechaVencimiento: fechaVencimientoCuota(fechaDesembolso, periodo, numero),
-      valorCuota: redondearMoneda(capital.plus(interes)),
-      interes,
+      valorCuota: redondearMoneda(capital.plus(interesPorCuota)),
+      interes: interesPorCuota,
       capital,
       saldoRestante,
     });
   }
 
-  return { valorCuota: redondearMoneda(capitalBase.plus(interesPorCuotaBase)), cuotas };
+  return { valorCuota: redondearMoneda(capitalBase.plus(interesPorCuota)), cuotas };
 }

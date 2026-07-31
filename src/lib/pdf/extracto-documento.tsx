@@ -83,7 +83,7 @@ export function ExtractoDocumento({ datos }: { datos: DatosExtracto }) {
           <Text style={estilos.seccionTitulo}>Préstamo</Text>
           <View style={estilos.filaCampos}>
             <Campo etiqueta="Monto" valor={formatearMoneda(prestamo.monto.toString())} />
-            <Campo etiqueta="Tasa" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
+            <Campo etiqueta="Tasa mensual" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
             <Campo etiqueta="Período de pago" valor={formatearPeriodo(prestamo.periodo)} />
             <Campo etiqueta="N° de cuotas" valor={String(prestamo.numeroCuotas)} />
             <Campo

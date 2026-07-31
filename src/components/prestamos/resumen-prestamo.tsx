@@ -21,7 +21,7 @@ export function ResumenPrestamo({ prestamo }: { prestamo: DatosResumenPrestamo }
   return (
     <Card className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       <Campo etiqueta="Monto" valor={formatearMoneda(prestamo.monto.toString())} />
-      <Campo etiqueta="Tasa" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
+      <Campo etiqueta="Tasa mensual" valor={`${prestamo.tasaPorcentaje.toString()}%`} />
       <Campo etiqueta="Período" valor={formatearPeriodo(prestamo.periodo)} />
       <Campo etiqueta="Cuotas" valor={String(prestamo.numeroCuotas)} />
       <Campo

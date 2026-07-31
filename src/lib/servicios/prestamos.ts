@@ -23,7 +23,7 @@ export interface CrearPrestamoInput {
 export async function crearPrestamo(input: CrearPrestamoInput) {
   const tabla = generarTablaAmortizacion({
     monto: input.monto,
-    tasaPorcentaje: input.tasaPorcentaje,
+    tasaMensualPorcentaje: input.tasaPorcentaje,
     periodo: input.periodo,
     numeroCuotas: input.numeroCuotas,
     fechaDesembolso: input.fechaDesembolso,
