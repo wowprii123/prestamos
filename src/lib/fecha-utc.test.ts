@@ -1,5 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { addDiasUTC, diferenciaEnDias, inicioDeDiaUTC } from "./fecha-utc";
+import { addDiasUTC, addMesesUTC, diferenciaEnDias, inicioDeDiaUTC } from "./fecha-utc";
+
+function iso(fecha: Date): string {
+  return fecha.toISOString().slice(0, 10);
+}
+
+describe("addMesesUTC", () => {
+  it("31 de julio + 1, 2 y 3 meses -> 31 ago, 30 sept, 31 oct (caso reportado)", () => {
+    const desembolso = new Date("2026-07-31");
+    expect(iso(addMesesUTC(desembolso, 1))).toBe("2026-08-31");
+    expect(iso(addMesesUTC(desembolso, 2))).toBe("2026-09-30");
+    expect(iso(addMesesUTC(desembolso, 3))).toBe("2026-10-31");
+  });
+
+  it("no se desborda al mes siguiente cuando el destino tiene menos días (31 de enero + 1 mes)", () => {
+    expect(iso(addMesesUTC(new Date("2026-01-31"), 1))).toBe("2026-02-28");
+  });
+
+  it("respeta el año bisiesto (29 de febrero existe en 2028)", () => {
+    expect(iso(addMesesUTC(new Date("2028-01-31"), 1))).toBe("2028-02-29");
+  });
+
+  it("no afecta fechas que no se desbordan (día 15)", () => {
+    expect(iso(addMesesUTC(new Date("2026-01-15"), 1))).toBe("2026-02-15");
+  });
+});
 
 describe("diferenciaEnDias", () => {
   it("es 0 para el mismo día", () => {

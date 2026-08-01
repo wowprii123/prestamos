@@ -21,10 +21,22 @@ export function addDiasUTC(fecha: Date, dias: number): Date {
   return resultado;
 }
 
+/**
+ * Suma meses a una fecha sin desbordarse al mes siguiente cuando el mes
+ * destino tiene menos días que el día original: 31 de julio + 1 mes debe
+ * dar 31 de agosto, pero + 2 meses debe dar 30 de septiembre (no "1 de
+ * octubre", que es lo que produce `setUTCMonth` al desbordarse porque
+ * septiembre no tiene día 31).
+ */
 export function addMesesUTC(fecha: Date, meses: number): Date {
-  const resultado = new Date(fecha);
-  resultado.setUTCMonth(resultado.getUTCMonth() + meses);
-  return resultado;
+  const anio = fecha.getUTCFullYear();
+  const mesIndice = fecha.getUTCMonth() + meses;
+  const dia = fecha.getUTCDate();
+
+  const ultimoDiaDelMesDestino = new Date(Date.UTC(anio, mesIndice + 1, 0)).getUTCDate();
+  const diaFinal = Math.min(dia, ultimoDiaDelMesDestino);
+
+  return new Date(Date.UTC(anio, mesIndice, diaFinal));
 }
 
 const MS_POR_DIA = 24 * 60 * 60 * 1000;
