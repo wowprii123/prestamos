@@ -65,17 +65,27 @@ export default async function EstadisticasPage({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <MetricaCard etiqueta="Total prestado" valor={resumen.totalPrestado} />
         <MetricaCard etiqueta="Total recuperado" valor={resumen.totalRecuperado} />
-        <MetricaCard etiqueta="Total intereses" valor={resumen.totalIntereses} />
+        <MetricaCard etiqueta="Intereses pagados" valor={resumen.interesesPagados} />
       </div>
 
-      <Card>
-        <p className="text-xs uppercase tracking-wide text-slate-500">
-          Saldo total de préstamos activos y en mora (a hoy, no depende del rango)
-        </p>
-        <p className="mt-1 text-2xl font-semibold text-slate-900">
-          {formatearMoneda(resumen.saldoTotalPendiente)}
-        </p>
-      </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Card>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Saldo total de préstamos activos y en mora (a hoy, no depende del rango)
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">
+            {formatearMoneda(resumen.saldoTotalPendiente)}
+          </p>
+        </Card>
+        <Card>
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Intereses futuros por cobrar (a hoy, no depende del rango)
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">
+            {formatearMoneda(resumen.interesesFuturos)}
+          </p>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -20,22 +20,41 @@ export function interesDeAplicacion(aplicacion: AplicacionParaInteres): Decimal 
   return new Decimal(aplicacion.montoAplicado).mul(proporcionInteres);
 }
 
-export interface SaldoCuota {
+export interface CuotaAbierta {
   valorCuota: Decimal.Value;
   montoPagado: Decimal.Value;
+  interes: Decimal.Value;
+}
+
+/**
+ * Interés que todavía falta cobrar de una cuota, proporcional a lo que le
+ * queda pendiente (misma lógica de prorrateo que interesDeAplicacion, pero
+ * sobre el saldo restante en vez de sobre un abono ya hecho).
+ */
+export function interesPendienteCuota(cuota: CuotaAbierta): Decimal {
+  const valorCuota = new Decimal(cuota.valorCuota);
+  if (valorCuota.isZero()) return new Decimal(0);
+
+  const saldoPendiente = valorCuota.minus(cuota.montoPagado);
+  const proporcionInteres = new Decimal(cuota.interes).div(valorCuota);
+  return saldoPendiente.mul(proporcionInteres);
 }
 
 export interface ResumenEstadisticas {
   totalPrestado: Decimal;
   totalRecuperado: Decimal;
-  totalIntereses: Decimal;
+  /** Interés efectivamente cobrado (abonos dentro del rango). */
+  interesesPagados: Decimal;
+  /** Interés que todavía falta cobrar en préstamos abiertos (activo/en_mora), a hoy. */
+  interesesFuturos: Decimal;
   saldoTotalPendiente: Decimal;
 }
 
 export interface DatosResumenEstadisticas {
   montosPrestamos: Decimal.Value[];
   aplicaciones: AplicacionParaInteres[];
-  cuotasActivas: SaldoCuota[];
+  /** Cuotas de préstamos abiertos (activo/en_mora); alimenta saldoTotalPendiente e interesesFuturos. */
+  cuotasAbiertas: CuotaAbierta[];
 }
 
 /** Agrega los totales de estadísticas a partir de datos ya consultados (sin acceso a DB). */
@@ -52,15 +71,20 @@ export function calcularResumenEstadisticas(
     new Decimal(0),
   );
 
-  const totalIntereses = datos.aplicaciones.reduce<Decimal>(
+  const interesesPagados = datos.aplicaciones.reduce<Decimal>(
     (acumulado, aplicacion) => acumulado.plus(interesDeAplicacion(aplicacion)),
     new Decimal(0),
   );
 
-  const saldoTotalPendiente = datos.cuotasActivas.reduce<Decimal>(
+  const saldoTotalPendiente = datos.cuotasAbiertas.reduce<Decimal>(
     (acumulado, cuota) => acumulado.plus(new Decimal(cuota.valorCuota).minus(cuota.montoPagado)),
     new Decimal(0),
   );
 
-  return { totalPrestado, totalRecuperado, totalIntereses, saldoTotalPendiente };
+  const interesesFuturos = datos.cuotasAbiertas.reduce<Decimal>(
+    (acumulado, cuota) => acumulado.plus(interesPendienteCuota(cuota)),
+    new Decimal(0),
+  );
+
+  return { totalPrestado, totalRecuperado, interesesPagados, interesesFuturos, saldoTotalPendiente };
 }

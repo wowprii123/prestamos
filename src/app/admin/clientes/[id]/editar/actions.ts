@@ -11,7 +11,9 @@ const esquemaCliente = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio"),
   direccion: z.string().min(1, "La dirección es obligatoria"),
   telefono: z.string().optional(),
+  notas: z.string().optional(),
   foto: esquemaFotoDataUrl,
+  foto2: esquemaFotoDataUrl,
 });
 
 export async function actualizarClienteAction(
@@ -26,7 +28,9 @@ export async function actualizarClienteAction(
     nombre: formData.get("nombre"),
     direccion: formData.get("direccion"),
     telefono: formData.get("telefono") || undefined,
+    notas: formData.get("notas") || undefined,
     foto: formData.get("foto"),
+    foto2: formData.get("foto2"),
   });
   if (!parsed.success) return parsed.error.issues[0].message;
 

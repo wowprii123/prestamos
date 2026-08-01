@@ -33,24 +33,23 @@ export default async function DetalleClientePage({
       </div>
 
       <Card className="flex flex-col gap-6 sm:flex-row sm:items-start">
-        {cliente.foto ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={cliente.foto}
-            alt={cliente.nombre}
-            className="h-70 w-70 shrink-0 rounded-xl object-cover"
-          />
-        ) : (
-          <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400">
-            Sin foto
-          </div>
-        )}
+        <div className="flex shrink-0 gap-3">
+          <FotoPerfil src={cliente.foto} alt={cliente.nombre} />
+          <FotoPerfil src={cliente.foto2} alt={cliente.nombre} />
+        </div>
 
         <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
           <Campo etiqueta="Dirección" valor={cliente.direccion} />
           <Campo etiqueta="Teléfono" valor={cliente.telefono ?? "—"} />
           <Campo etiqueta="Registrado" valor={formatearFecha(cliente.creadoEn)} />
         </div>
+      </Card>
+
+      <Card>
+        <h2 className="mb-2 text-sm font-semibold text-slate-900">Notas</h2>
+        <p className="whitespace-pre-wrap text-sm text-slate-700">
+          {cliente.notas || "Sin notas."}
+        </p>
       </Card>
 
       <Card>
@@ -104,6 +103,21 @@ export default async function DetalleClientePage({
         )}
       </Card>
     </div>
+  );
+}
+
+function FotoPerfil({ src, alt }: { src: string | null; alt: string }) {
+  if (!src) {
+    return (
+      <div className="flex h-40 w-40 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400">
+        Sin foto
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} className="h-40 w-40 shrink-0 rounded-xl object-cover" />
   );
 }
 

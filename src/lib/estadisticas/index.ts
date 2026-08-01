@@ -1,7 +1,7 @@
-export { calcularResumenEstadisticas, interesDeAplicacion } from "./calculos";
+export { calcularResumenEstadisticas, interesDeAplicacion, interesPendienteCuota } from "./calculos";
 export type {
   AplicacionParaInteres,
+  CuotaAbierta,
   DatosResumenEstadisticas,
   ResumenEstadisticas,
-  SaldoCuota,
 } from "./calculos";

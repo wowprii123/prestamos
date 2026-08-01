@@ -6,6 +6,7 @@ import { comprimirImagenADataUrl } from "@/lib/comprimir-imagen";
 interface SelectorFotoProps {
   /** name del input oculto que viaja en el form (ya como data URL JPEG). */
   nombre: string;
+  etiqueta?: string;
   fotoInicial?: string | null;
   ayuda?: string;
   onProcesandoChange?: (procesando: boolean) => void;
@@ -13,6 +14,7 @@ interface SelectorFotoProps {
 
 export function SelectorFoto({
   nombre,
+  etiqueta = "Foto",
   fotoInicial = null,
   ayuda,
   onProcesandoChange,
@@ -43,7 +45,7 @@ export function SelectorFoto({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700">Foto</label>
+      <label className="block text-sm font-medium text-slate-700">{etiqueta}</label>
       <div className="mt-1 flex items-center gap-3">
         {dataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -69,8 +69,10 @@ model Cliente {
   nombre    String
   direccion String
   telefono  String?
-  /** Foto guardada como data URL (base64) directamente en la base de datos. */
+  /** Fotos guardadas como data URL (base64) directamente en la base de datos. */
   foto      String?  @db.Text
+  foto2     String?  @db.Text
+  notas     String?  @db.Text
   creadoEn  DateTime @default(now()) @map("creado_en")
 
   prestamos Prestamo[]

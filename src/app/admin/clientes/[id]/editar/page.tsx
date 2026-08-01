@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { obtenerCliente } from "@/lib/servicios/clientes";
+import { obtenerClienteBasico } from "@/lib/servicios/clientes";
 import { Card } from "@/components/ui/card";
 import { EditarClienteForm } from "./editar-cliente-form";
 
@@ -9,7 +9,7 @@ export default async function EditarClientePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const cliente = await obtenerCliente(id);
+  const cliente = await obtenerClienteBasico(id);
   if (!cliente) notFound();
 
   return (
