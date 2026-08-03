@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { obtenerPrestamo } from "@/lib/servicios/prestamos";
 import { montoRecomendado as calcularMontoRecomendado } from "@/lib/pagos";
@@ -53,9 +54,15 @@ export default async function DetallePrestamoPage({
       </Card>
 
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-slate-900">
-          Tabla de amortización
-        </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-slate-900">Tabla de amortización</h2>
+          <Link
+            href={`/admin/prestamos/${prestamo.id}/fechas`}
+            className="text-sm font-medium text-slate-700 hover:underline"
+          >
+            Reconfigurar fechas
+          </Link>
+        </div>
         <TablaAmortizacion cuotas={prestamo.cuotas} />
       </Card>
 

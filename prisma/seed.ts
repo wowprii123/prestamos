@@ -4,7 +4,7 @@ import { prisma } from "../src/lib/db";
 import { generarTablaAmortizacion } from "../src/lib/amortizacion";
 
 async function main() {
-  const hashAdmin = await bcrypt.hash("admin123", 10);
+  const hashAdmin = await bcrypt.hash("David12345678.", 10);
 
   const admin = await prisma.usuario.upsert({
     where: { email: "davidjaramillo1191@gamil.com" },
@@ -12,7 +12,7 @@ async function main() {
     create: {
       email: "davidjaramillo1191@gamil.com",
       hashPassword: hashAdmin,
-      nombre: "Administrador",
+      nombre: "Mateo",
     },
   });
 

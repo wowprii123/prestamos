@@ -75,6 +75,37 @@ export async function anularPrestamo(id: string) {
   });
 }
 
+export interface FechaCuota {
+  cuotaId: string;
+  fechaVencimiento: Date;
+}
+
+/**
+ * Actualiza la fecha de vencimiento de una o más cuotas de un préstamo. No
+ * toca capital, interés ni valor de cuota. Ignora cualquier cuotaId que no
+ * pertenezca a este préstamo (evita que un id manipulado toque cuotas de
+ * otro préstamo).
+ */
+export async function actualizarFechasCuotas(prestamoId: string, fechas: FechaCuota[]) {
+  const cuotasDelPrestamo = await prisma.cuota.findMany({
+    where: { prestamoId },
+    select: { id: true },
+  });
+  const idsValidos = new Set(cuotasDelPrestamo.map((cuota) => cuota.id));
+  const actualizaciones = fechas.filter((fecha) => idsValidos.has(fecha.cuotaId));
+
+  if (actualizaciones.length === 0) return;
+
+  await prisma.$transaction(
+    actualizaciones.map((fecha) =>
+      prisma.cuota.update({
+        where: { id: fecha.cuotaId },
+        data: { fechaVencimiento: fecha.fechaVencimiento },
+      }),
+    ),
+  );
+}
+
 export async function obtenerPrestamo(id: string) {
   return prisma.prestamo.findUnique({
     where: { id },
